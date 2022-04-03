@@ -1,0 +1,4 @@
+Webcam:
+  video_source: 1
+  resolution: [1280, 720]
+  type: 2
