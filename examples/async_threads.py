@@ -61,9 +61,7 @@ def plot(num_tasks, times, fps):
     plt.show()
 
 
-def main_sync():
-    cam = Webcam(video_source=1, resolution=(1280, 720), type=Webcam.Type.V4L)
-
+def main_sync(sensor: Sensor):
     NUM_T = 20
     N = 2  # Number of loops
     M = 2   # Number of repeats
@@ -73,7 +71,7 @@ def main_sync():
     fps = []
 
     for T in range(1, NUM_T):
-        times_local = timeit.repeat(stmt=lambda: n_read_sensor(T, cam, VERBOSE), number=N, repeat=M)
+        times_local = timeit.repeat(stmt=lambda: n_read_sensor(T, sensor, VERBOSE), number=N, repeat=M)
         time_mean, fps_mean = eval_times(times_local, N)
 
         times.append(time_mean)
@@ -86,8 +84,10 @@ def main_sync():
 
 
 def main():
+    cam = Webcam(video_source=1, resolution=(1280, 720), type=Webcam.Type.V4L)
+    
     try:
-        main_sync()
+        main_sync(cam)
     except KeyboardInterrupt:
         pass
 
