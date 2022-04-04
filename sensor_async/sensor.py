@@ -24,7 +24,7 @@ class Sensor(abc.ABC):
         # variables
         self.reading = False
         self.data = None
-        self.mutex = threading.Condition()
+        self.cond = threading.Condition()
         self.future = None
         self.valid = False
 
@@ -83,44 +83,61 @@ class Sensor(abc.ABC):
         @return Data in format dependent to sensor
         '''
 
-        if not self.reading:
-            # Actively read data from resource
-            self.reading = True
+        is_reader = False
+
+        # Safe: Update reading status
+        with self.cond:
+            if not self.reading:
+                self.reading = True
+                is_reader = True
+
+        if is_reader:
+            # One thread will read the data
             self.data = self.get_data()
 
-            # Notify all threads that wait for data
-            with self.mutex:
-                self.mutex.notify_all()
+            # Safe: Notify waiting threads, reset reading status
+            with self.cond:
+                self.cond.notify_all()
+                self.reading = False
 
-            self.reading = False
         else:
-            # Other thread is reading right now: Wait to be notified
-            with self.mutex:
-                self.mutex.wait()
+            # Safe: Wait for reading thread to notify when data was read
+            with self.cond:
+                self.cond.wait()
 
-        # Return data
         return self.data
 
-    async def get_data_async(self):
+    async def get_data_async(self, cond: asyncio.Condition):
         '''! Get the data of a single sensor measurement. Handles simultanious access
         of mulitple asyncio tasks.
 
         @return Data in format dependent to sensor
         '''
 
-        if self.future == None or self.future.done():
-            # Actively read data from resource
+        is_reader = False
+
+        # Safe: Update reading status
+        async with cond:
+            if not self.reading:
+                self.reading = True
+                is_reader = True
+
+        if is_reader:
+            # Apply reading task to thread pool
             loop = asyncio.get_running_loop()
-            self.future = loop.create_future()
 
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 self.data = await loop.run_in_executor(pool, self.get_data)
 
-            # Notify other tasks that wait for data
-            self.future.set_result(True)
+            # Safe: Notify waiting tasks, reset reading status
+            async with cond:
+                cond.notify_all()
+                self.reading = False
+
         else:
-            # Other task is reading right now: Wait to be notified
-            await self.future
+            # Safe: Wait for reading task to notify when data was read
+            async with cond:
+                await cond.wait()
 
         return self.data
 

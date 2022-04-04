@@ -7,16 +7,19 @@ from sensor_async.sensor import Sensor
 from sensor_async.webcam import Webcam
 
 
-async def read_data_async(sensor: Sensor, verbose: bool = False):
-    data = await sensor.get_data_async()
+async def read_data_async(cond: asyncio.Condition, sensor: Sensor, verbose: bool = False):
+    data = await sensor.get_data_async(cond)
 
     if verbose:
         print(f'Data length: {len(data)}')
 
 
-async def n_read_sensor(n: int, sensor: Sensor, verbose: bool):
-    tasks = [read_data_async(sensor, verbose) for i in range(n)]
-    await asyncio.wait(tasks)
+async def n_read_sensor(cond: asyncio.Condition, n: int, sensor: Sensor, verbose: bool):
+    loop = asyncio.get_running_loop()
+    tasks = [loop.create_task(read_data_async(cond, sensor, verbose)) for i in range(n)]
+
+    for task in tasks:
+        await task
 
 
 def plot(num_tasks, times, fps):
@@ -43,10 +46,11 @@ def plot(num_tasks, times, fps):
 
 async def main_async(sensor: Sensor):
     NUM_T = 10
-    N = 2
+    N = 5
     VERBOSE = False
 
     loop = asyncio.get_running_loop()
+    cond = asyncio.Condition()
 
     times = []
     fps = []
@@ -55,7 +59,7 @@ async def main_async(sensor: Sensor):
         times_local = []
         for n in range(N):
             t0 = loop.time()
-            await n_read_sensor(T, sensor, VERBOSE)
+            await n_read_sensor(cond, T, sensor, VERBOSE)
             times_local.append(loop.time() - t0)
 
         time_mean = sum(times_local) / len(times_local)
