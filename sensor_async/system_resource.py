@@ -10,7 +10,8 @@ class SystemResource(Sensor):
     to return its values.
     '''
 
-    def __init__(self, name: str, files: list, pattern: str, converter: str) -> None:
+    def __init__(self, name: str = 'system_resource', files: list = [],
+                 pattern: str = '', converter: str = '') -> None:
         '''! Construct a new SystemResource objec
 
         @param name Sensor name for identification
@@ -25,6 +26,16 @@ class SystemResource(Sensor):
 
         super().__init__(name)
 
+    def exec_and_return(self, expression):
+        '''! Execute expression and return
+
+        @param expression Executable expression as string
+        @return Return value
+        '''
+
+        exec(f'locals()["result"]={expression}')
+        return locals()['result']
+
     def read_file(self, file):
         '''! Read system file and convert it to expected output format
 
@@ -34,13 +45,17 @@ class SystemResource(Sensor):
         try:
             with open(file) as sensor:
                 # Extract data using Regex
-                data = re.search(self.pattern, sensor.read())
+                data_raw = sensor.read()
+                match = re.search(self.pattern, data_raw)
 
-            if data is not None:
+            if match is not None:
+                data = match[1]
                 # Convert to format using python code execution
-                return exec(self.converter.replace('data', str(data)))
+                return self.exec_and_return(self.converter.replace('data', str(data)))
         except:
             pass
+
+        return None
 
     def setup(self) -> bool:
         '''! Setup the SystemResource with given parameters

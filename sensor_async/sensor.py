@@ -31,6 +31,19 @@ class Sensor(abc.ABC):
         # Setup and test the sensor
         self.config({})
 
+    def parse_param(self, param):
+        '''! Parse config parameter to be executable
+
+        @param Raw param read from config
+        @return Param in executable form
+        '''
+
+        # Restrict strings from being executed
+        if isinstance(param, str):
+            return f'str("{param}")'
+
+        return param
+
     def config(self, config: dict) -> None:
         '''! Configure sensor parameters by providing a config dictionary
 
@@ -45,8 +58,8 @@ class Sensor(abc.ABC):
         for param in config:
             if param in members:
                 try:
-                    exec(f'self.{param}={config[param]}')
-                except Exception as e:
+                    exec(f'self.{param}={self.parse_param(config[param])}')
+                except:
                     pass
 
         # Setup and test the sensor

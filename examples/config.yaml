@@ -1,4 +1,10 @@
-Webcam:
-  video_source: 1
-  resolution: [1280, 720]
-  type: 2
+# Webcam:
+#   name: 'webcam'
+#   video_source: 0
+#   resolution: [1280, 720]
+
+SystemResource:
+  name: 'temp'
+  files: ['/sys/bus/w1/devices/28-0620179e2c49/w1_slave', '/sys/bus/w1/devices/28-062017b40914/w1_slave', '/sys/bus/w1/devices/28-0120506f5efe/w1_slave']
+  pattern: 't=(\d+)'
+  converter: 'int(data)/1000'
