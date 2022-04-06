@@ -28,9 +28,6 @@ class Sensor(abc.ABC):
         self.future = None
         self.valid = False
 
-        # Setup and test the sensor
-        self.config({})
-
     def parse_param(self, param):
         '''! Parse config parameter to be executable
 

@@ -22,9 +22,8 @@ class Webcam(Sensor):
         OpenCV = 1
         V4L = 2
 
-    def __init__(
-            self, name: str = 'webcam', video_source: int = 0, resolution: tuple = (1080, 720),
-            type: Type = Type.V4L) -> None:
+    def __init__(self, name: str = 'webcam', video_source: int = 0, resolution: list = [1080, 720],
+                 type: Type = Type.V4L, config: dict = {}) -> None:
         '''! Construct a new Webcam object
 
         @param name Sensor name for identification
@@ -32,6 +31,8 @@ class Webcam(Sensor):
         @param resolution Webcam resolution for reading
         @param type Webcam driver selection
         '''
+
+        super().__init__(name)
 
         self.video_source = video_source
         self.resolution = resolution
@@ -41,7 +42,8 @@ class Webcam(Sensor):
         if platform.system() == 'Windows':
             self.type = Webcam.Type.OpenCV.value
 
-        super().__init__(name)
+        # Setup sensor
+        self.config(config)
 
     def setup(self) -> bool:
         '''! Setup the Webcam with given parameters

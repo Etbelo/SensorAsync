@@ -11,7 +11,7 @@ class SystemResource(Sensor):
     '''
 
     def __init__(self, name: str = 'system_resource', files: list = [],
-                 pattern: str = '', converter: str = '') -> None:
+                 pattern: str = '', converter: str = '', config: dict = {}) -> None:
         '''! Construct a new SystemResource objec
 
         @param name Sensor name for identification
@@ -20,11 +20,13 @@ class SystemResource(Sensor):
         @param converter Python code to convert data to expected output format
         '''
 
+        super().__init__(name)
+
         self.files = files
         self.pattern = pattern
         self.converter = converter
 
-        super().__init__(name)
+        self.config(config)
 
     def exec_and_return(self, expression):
         '''! Execute expression and return

@@ -54,8 +54,7 @@ def sensors_from_config(config):
     for sensor_name in config:
         if sensor_name in sensors:
             # Configure sensor object
-            sensor = sensors[sensor_name]()
-            sensor.config(config[sensor_name])
+            sensor = sensors[sensor_name](config=config[sensor_name])
 
             # Test if sensor is valid and append to result
             if sensor.valid:
