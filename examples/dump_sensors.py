@@ -12,7 +12,8 @@ def main():
 
     # Dump measurement for all configured sensors
     for sensor in sensors:
-        sensor.dump_file(base_dir)
+        if sensor.valid:
+            sensor.dump_file(base_dir)
 
 
 if __name__ == '__main__':

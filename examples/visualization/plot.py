@@ -1,16 +1,11 @@
-import os
-
+import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
 
-if 'DISPLAY' in os.environ:
-    matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
-import numpy as np
+matplotlib.use('Agg')
 
 
-def plot(num_tasks, times, fps):
+def plot(name, num_tasks, times, fps):
     threads = np.arange(1, num_tasks)
     times_np = np.array(times)
     fps_np = np.array(fps)
@@ -25,8 +20,8 @@ def plot(num_tasks, times, fps):
 
     ax[1].plot(threads, fps_np)
     ax[1].set_ylim([0, 1.2*np.max(fps_np)])
-    ax[1].set_xlabel('Concurrent Threads')
+    ax[1].set_xlabel('Threads')
     ax[1].set_ylabel('FPS [Hz]')
     ax[1].set_xticks(threads)
 
-    plt.show()
+    plt.savefig(name)

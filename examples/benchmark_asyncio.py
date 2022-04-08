@@ -45,7 +45,8 @@ async def main_async(num_t: int, n: int, verbose: bool, sensor: Sensor):
             f'{n} loops, {t} tasks > mean_time: {time_mean:.04} [s], mean_fps: {fps_mean:.04} [Hz]',
             flush=True)
 
-    plot(num_t, times, fps)
+    print('Save plot as image...')
+    plot('benchmark_asyncio.png', num_t, times, fps)
 
 
 def main():
@@ -54,12 +55,13 @@ def main():
     VERBOSE = False
 
     # Sensor
-    cam = Webcam(video_source=0, resolution=(1280, 720), type=Webcam.Type.V4L)
+    sensor = Webcam(video_source=0, resolution=(1280, 720), type=Webcam.Type.V4L)
 
-    try:
-        asyncio.run(main_async(NUM_T, N, VERBOSE, cam))
-    except KeyboardInterrupt:
-        pass
+    if sensor.valid:
+        try:
+            asyncio.run(main_async(NUM_T, N, VERBOSE, sensor))
+        except KeyboardInterrupt:
+            pass
 
 
 if __name__ == '__main__':

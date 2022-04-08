@@ -55,22 +55,24 @@ def main_sync(num_t: int, n: int, m: int, verbose: bool, sensor: Sensor):
         print(
             f'{n} loops, {m} repeats, {t} threads > mean_time: {time_mean:.04} [s], mean_fps: {fps_mean:.04} [Hz]')
 
-    plot(num_t, times, fps)
+    print('Save plot as image...')
+    plot('benchmark_threads.png', num_t, times, fps)
 
 
 def main():
-    NUM_T = 20
-    N = 2  # Number of loops
-    M = 2   # Number of repeats
+    NUM_T = 10
+    N = 5  # Number of loops
+    M = 1   # Number of repeats
     VERBOSE = False
 
     # Sensor
-    cam = Webcam(video_source=0, resolution=(1280, 720), type=Webcam.Type.V4L)
+    sensor = Webcam(video_source=0, resolution=(1280, 720), type=Webcam.Type.V4L)
 
-    try:
-        main_sync(NUM_T, N, M, VERBOSE, cam)
-    except KeyboardInterrupt:
-        pass
+    if sensor.valid:
+        try:
+            main_sync(NUM_T, N, M, VERBOSE, sensor)
+        except KeyboardInterrupt:
+            pass
 
 
 if __name__ == '__main__':

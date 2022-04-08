@@ -87,9 +87,14 @@ class SystemResource(Sensor):
         @return True if sensor is valid
         '''
 
-        data = self.get_data()
+        data = json.loads(self.get_data())
 
-        return len(data) > 0
+        valid = True
+
+        for value in data.values():
+            valid &= value is not None
+
+        return valid
 
     def dump_file(self, base_path: str) -> None:
         '''! Store a single measurement as a file
