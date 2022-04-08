@@ -109,8 +109,8 @@ class Sensor(abc.ABC):
             return self.get_data()
 
     def get_data_async_thread(self):
-        '''! Get the data of a single sensor measurement. Handles simultanious access 
-        of mulitple threads returning the same data.
+        '''! Get the data of a single sensor measurement. Handles simultaneous access 
+        of mulitple threads, returning the same data.
 
         @return Data in format dependent to sensor
         '''
@@ -141,8 +141,8 @@ class Sensor(abc.ABC):
         return self.data
 
     async def get_data_async_asyncio(self, cond: asyncio.Condition):
-        '''! Get the data of a single sensor measurement. Handles simultanious access
-        of mulitple asyncio tasks returning the same data.
+        '''! Get the data of a single sensor measurement. Handles simultaneous access
+        of mulitple asyncio tasks, returning the same data.
 
         @param cond Asyncio condition from working thread
         @return Data in format dependent to sensor
