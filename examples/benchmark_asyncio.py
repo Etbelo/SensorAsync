@@ -3,7 +3,7 @@ import asyncio
 from sensor_async.sensor import Sensor
 from sensor_async.webcam import Webcam
 
-from lib.visualization import plot
+from visualization.plot import plot
 
 
 async def read_data_async(cond: asyncio.Condition, sensor: Sensor, verbose: bool = False):

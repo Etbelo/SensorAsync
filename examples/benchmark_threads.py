@@ -5,7 +5,7 @@ from sensor_async.sensor import Sensor
 from sensor_async.webcam import Webcam
 
 
-from lib.visualization import plot
+from visualization.plot import plot
 
 
 def read_data(sensor: Sensor, verbose: bool = False):
