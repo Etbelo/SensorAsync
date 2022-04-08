@@ -1,7 +1,7 @@
-# Webcam:
-#   name: 'webcam'
-#   video_source: 0
-#   resolution: [1280, 720]
+Webcam:
+  name: 'webcam'
+  video_source: 0
+  resolution: [1280, 720]
 
 SystemResource:
   name: 'temp'

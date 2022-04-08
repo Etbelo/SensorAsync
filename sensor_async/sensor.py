@@ -21,10 +21,22 @@ class Sensor(abc.ABC):
         # arguments
         self.name = name
 
-        # variables
-        self.reading = False
+        # Parameter: Threadsafe reading
+        self.reading_thread = False
+        self.param_lock = threading.Lock()
+
+        # Parameter: Tasksafe reading
+        self.reading_task = False
+        self.param_lock_asyncio = asyncio.Lock()
+
+        # Data
         self.data = None
+        self.data_lock = threading.Lock()
+
+        # Reading condition: Thread (Reading condition for asyncio must
+        # be generated in event-loop Thread)
         self.cond = threading.Condition()
+
         self.future = None
         self.valid = False
 
@@ -86,66 +98,79 @@ class Sensor(abc.ABC):
 
         return f'data_{self.name}_{timestamp}'
 
-    def get_data_thread(self):
-        '''! Get the data of a single sensor measurement. Handles simultanious access 
-        of mulitple threads.
+    def get_data_safe(self):
+        '''!  Get the data of a single sensor measurement. Let only one thread access
+        the resource at a time. Last protection measure to safely access the resource.
 
         @return Data in format dependent to sensor
         '''
 
-        is_reader = False
+        with self.data_lock:
+            return self.get_data()
 
-        # Safe: Update reading status
-        with self.cond:
-            if not self.reading:
-                self.reading = True
-                is_reader = True
+    def get_data_async_thread(self):
+        '''! Get the data of a single sensor measurement. Handles simultanious access 
+        of mulitple threads returning the same data.
 
-        if is_reader:
-            # One thread will read the data
-            self.data = self.get_data()
+        @return Data in format dependent to sensor
+        '''
 
-            # Safe: Notify waiting threads, reset reading status
+        reader = False
+
+        # First thread to detect reading_thread==False is marked the reader
+        with self.param_lock:
+            if not self.reading_thread:
+                reader = True
+                self.reading_thread = True
+
+        if reader:
+            # Reader thread gets data (Additional read protection to be safe)
+            self.data = self.get_data_safe()
+
+            # Notify waiting threads
             with self.cond:
                 self.cond.notify_all()
-                self.reading = False
 
+            # Reset reading variable
+            self.reading_thread = False
         else:
-            # Safe: Wait for reading thread to notify when data was read
+            # Wait for reading to be finished (Timeout 1 second)
             with self.cond:
-                self.cond.wait()
+                self.cond.wait(1.0)
 
         return self.data
 
-    async def get_data_async(self, cond: asyncio.Condition):
+    async def get_data_async_asyncio(self, cond: asyncio.Condition):
         '''! Get the data of a single sensor measurement. Handles simultanious access
-        of mulitple asyncio tasks.
+        of mulitple asyncio tasks returning the same data.
 
+        @param cond Asyncio condition from working thread
         @return Data in format dependent to sensor
         '''
 
-        is_reader = False
+        reader = False
 
-        # Safe: Update reading status
-        async with cond:
-            if not self.reading:
-                self.reading = True
-                is_reader = True
+        # First task to detect reading_task==False is marked the reader
+        async with self.param_lock_asyncio:
+            if not self.reading_task:
+                reader = True
+                self.reading_task = True
 
-        if is_reader:
-            # Apply reading task to thread pool
+        if reader:
             loop = asyncio.get_running_loop()
 
+            # Reader task gets data (Additional read protection to be safe)
             with concurrent.futures.ThreadPoolExecutor() as pool:
-                self.data = await loop.run_in_executor(pool, self.get_data)
+                self.data = await loop.run_in_executor(pool, self.get_data_safe)
 
-            # Safe: Notify waiting tasks, reset reading status
+            # Notify waiting tasks
             async with cond:
                 cond.notify_all()
-                self.reading = False
 
+            # Reset reading variable
+            self.reading_task = False
         else:
-            # Safe: Wait for reading task to notify when data was read
+            # Wait for reading to be finished
             async with cond:
                 await cond.wait()
 
@@ -162,7 +187,9 @@ class Sensor(abc.ABC):
 
     @abc.abstractmethod
     def get_data(self):
-        '''! Retrieve a single measurement in default data format
+        '''! Retrieve a single measurement in default data format. No thread
+        protection necessary. Reading threadsafe using get_data_safe or
+        get_data_async.
 
         @return Data in format dependent to sensor
         '''

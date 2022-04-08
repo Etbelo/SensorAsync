@@ -16,21 +16,21 @@ pip3 install -e .
 
 ## Examples
 
-* Read sensor using variable number of concurrent tasks. Example uses webcam as a sensor.
+* Webcam benchmark reading data from multiple concurrent threads.
 
 ```shell
 cd examples
-python3 async_asyncio.py
+python3 benchmark_threads.py
 ```
 
-* Read sensor using variable number of concurrent threads. Example uses webcam as a sensor.
+* Webcam benchmark reading data from multiple concurrent asyncio tasks.
 
 ```shell
 cd examples
-python3 async_threads.py
+python3 benchmark_asyncio.py
 ```
 
-* Configure sensors from `config.yaml` file and store all valid sensor measurements as files.
+* Configure sensors in `config.yaml` file and automatically store all measurements as files.
 
 ```shell
 cd examples

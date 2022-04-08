@@ -27,7 +27,7 @@ def get_sensors():
     return sensors
 
 
-def read_config(config_file):
+def get_config(config_file):
     '''! Read yaml config file
 
     @return Config dictionary
@@ -42,12 +42,12 @@ def read_config(config_file):
     return None
 
 
-def sensors_from_config(config):
+def get_sensors_from_config(config):
     # Dictionary with all available sensor names and classes
     sensors = get_sensors()
 
     # Sensor config file
-    config = read_config('config.yaml')
+    config = get_config('config.yaml')
 
     result = []
 

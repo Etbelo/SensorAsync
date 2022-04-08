@@ -5,7 +5,7 @@ import sensor_async.info as INFO
 
 def main():
     # Get sensor objects from config file
-    sensors = INFO.sensors_from_config('config.yaml')
+    sensors = INFO.get_sensors_from_config('config.yaml')
 
     # Local directory
     base_dir = os.path.dirname(__file__)
